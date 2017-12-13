@@ -1,0 +1,114 @@
+<form class="w3-panel" method="post" action="{{ action }}">
+{% csrf_token %}
+    <h1 class="w3-opacity ">{{ head }}</h1>
+        {% for element in elements %}
+            {% if element.0 == "input" or element.0 == "i" %}
+                <p><input
+                        class="w3-input"
+                        type="{{ element.1 }}"
+                        name = "{{ element.2 }}"
+                        id = "id_{{ formno }}_{{ element.2 }}"
+                        placeholder="{{ element.3 }}"
+                        oninput="validate_{{ formno }}_('id_{{ formno }}_{{ element.2 }}', '{{ element.4 }}');"
+                >
+                <span class="w3-text-red w3-small" id="id_{{ formno }}_{{ element.2 }}_s"></span></p>
+            {% endif %}
+        {% endfor %}
+    <p><input id="id_{{ formno }}_submit" type="submit" name="submit" value="{{ sbtn_text }}" class="w3-button w3-ripple w3-disabled" disabled></p>
+
+                <script>
+                    reds{{ formno }} = {};
+
+                    $(document).ready(function () {
+                        {% for element in elements %}
+                            {% if 'r' in element.4 %}
+                            reds{{ formno }}['id_{{ formno }}_{{ element.2 }}']=false;
+                            {% endif %}
+                        {% endfor %}
+                    });
+                    function validate_{{ formno }}_(id, type) {
+                        elem = $('#'+id);
+                        edesc  = $('#'+id+'_s');
+
+                        if(type.indexOf('r')!==-1){
+                            //required field
+                            if(elem.val()===''){
+                                elem.addClass('w3-text-red');
+                                elem.removeClass('w3-text-green');
+                                edesc.html('*required field');
+                                reds{{ formno }}[id]=false;
+                                form_{{ formno }}_verify();
+                                return ;
+                            }
+                            else{
+                                elem.addClass('w3-text-green');
+                                elem.removeClass('w3-text-red');
+                                edesc.html('');
+                                reds{{ formno }}[id]=true;
+                            }
+                        }
+                        if(type.indexOf('e')!==-1 ){
+                            count = (elem.val().match(/@/g) || []).length;
+
+
+                            if(count === 1 || elem.val()===''){
+                                elem.removeClass('w3-text-red');
+                                    edesc.html('');
+                                if(elem.val()===''){elem.removeClass('w3-text-green');}
+                                else {
+                                    //one @ found
+                                    elem.addClass('w3-text-green');
+                                    reds{{ formno }}[id] = true;
+                                }
+                            }
+                            else if(count === 0)
+                            {
+                                //zero @ found
+
+                                elem.addClass('w3-text-red');
+                                elem.removeClass('w3-text-green');
+                                edesc.html('*enter a valid email');
+                                reds{{ formno }}[id]=false;
+                                form_{{ formno }}_verify();
+                                return ;
+                            }
+                            else{
+                                //more than one @ found
+                                elem.addClass('w3-text-red');
+                                elem.removeClass('w3-text-green');
+                                edesc.html('*single email is required');
+                                reds{{ formno }}[id]=false;
+                                form_{{ formno }}_verify();
+                                return ;
+                            }
+                        }
+                        form_{{ formno }}_verify();
+
+                    }
+                    function form_{{ formno }}_verify()
+                    {
+                        sbtn = $('#'+'id_{{ formno }}_submit');
+                        allcorrect=true;
+                        for(var ids in reds{{ formno }}){
+
+                                //console.log(ids+' '+reds{{ formno }}[ids]);
+                                if(reds{{ formno }}[ids]===false){
+                                    allcorrect=false;
+                                    break;
+                                }
+
+
+                        }
+                        if(allcorrect){
+                            sbtn.removeClass('w3-disabled');
+                            sbtn.addClass('w3-green');
+                            sbtn.prop('disabled', false);
+                        }
+                        else{
+                            sbtn.removeClass('w3-green');
+                            sbtn.addClass('w3-disabled');
+                            sbtn.prop('disabled', true);
+                        }
+                    }
+                </script>
+</form>
